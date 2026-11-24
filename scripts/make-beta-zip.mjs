@@ -9,7 +9,7 @@
 // 再配布できない素材を入れた友人限定版を作るときは、build-beta-set.mjs --with-starter と、手で Mod/ へ足す(この版では入れない)。
 // 使い方: node scripts/make-beta-zip.mjs
 import { spawnSync } from 'node:child_process'
-import { cpSync, existsSync, mkdirSync, readFileSync, readdirSync, rmSync, statSync } from 'node:fs'
+import { cpSync, existsSync, mkdirSync, readFileSync, readdirSync, rmSync, statSync, writeFileSync } from 'node:fs'
 import { dirname, join, resolve } from 'node:path'
 import { fileURLToPath } from 'node:url'
 
@@ -30,13 +30,14 @@ for (const [p, hint] of need) if (!existsSync(p)) throw new Error(`見つかり�
 rmSync(stage, { recursive: true, force: true })
 rmSync(zip, { force: true })
 mkdirSync(join(stage, 'Mod'), { recursive: true })
-mkdirSync(join(stage, 'サンプル'), { recursive: true })
+mkdirSync(join(stage, 'Sample'), { recursive: true })
 
 cpSync(join(repo, 'release', 'win-unpacked'), join(stage, 'VMaid'), { recursive: true })
 cpSync(join(root, 'mods', 'news-rss.vmaidmod'), join(stage, 'Mod', 'news-rss.vmaidmod'))
-cpSync(join(repo, 'AliciaSolid.vrm'), join(stage, 'サンプル', 'AliciaSolid.vrm'))
-cpSync(join(repo, 'docs', 'beta-readme.txt'), join(stage, 'はじめに.txt'))
-cpSync(join(repo, 'docs', 'BETA_GUIDE.md'), join(stage, 'ベータ手順書.md'))
+cpSync(join(repo, 'AliciaSolid.vrm'), join(stage, 'Sample', 'AliciaSolid.vrm'))
+// ファイル名は ASCII にする(Windows 標準の展開で、日本語名が文字化けするため)。README.txt は、メモ帳でも読めるよう、BOM つき・CRLF にする
+writeFileSync(join(stage, 'README.txt'), '﻿' + readFileSync(join(repo, 'docs', 'beta-readme.txt'), 'utf-8').replace(/\r?\n/g, '\r\n'))
+cpSync(join(repo, 'docs', 'BETA_GUIDE.md'), join(stage, 'GUIDE.md'))
 
 // 配布に含めない公式 Mod: 性格系(おっとり・元気・クール・ヤンデレ)。リポジトリには残す(2026-11-24 の判断)
 const officialDir = join(stage, 'VMaid', 'resources', 'mods', 'official')

@@ -50,7 +50,7 @@ Windows のみ・インストーラなし・署名なし。ZIP は GitHub Releas
   2. `node scripts/build-beta-set.mjs`(`beta/mods/news-rss.vmaidmod`。友人限定の初期セットは `--with-starter` を付けたときだけ作る。公開の ZIP には入れない)
   3. `AliciaSolid.vrm` をリポジトリ直下に置く(`.gitignore` 済み)
   4. `node scripts/make-beta-zip.mjs`(`beta/VMaid-beta-<version>-win.zip`。約 540MB。性格系の公式 Mod(`persona-*`)を取り除き、`.pmx` / `.vmd` / `.gguf` / 音声などが混ざっていれば止まる)
-- ZIP の中身: `VMaid/`(本体)/ `Mod/news-rss.vmaidmod` / `サンプル/AliciaSolid.vrm` / `はじめに.txt`(`docs/beta-readme.txt`)/ `ベータ手順書.md`(`docs/BETA_GUIDE.md`)
+- ZIP の中身: `VMaid/`(本体)/ `Mod/news-rss.vmaidmod` / `Sample/AliciaSolid.vrm` / `README.txt`(`docs/beta-readme.txt`)/ `GUIDE.md`(`docs/BETA_GUIDE.md`)
 - **素材**: Alicia Solid(ニコニ立体の配布ページで「再配布 可能」と確認。規約の禁止事項は手順書に明記)と、自動生成のモーションだけ。VRoid 公式 VRMA・aikeya の待機・Spicy 由来のモーションは、権利が不明・禁止のため入れない(入手先を手順書で紹介するだけ)
 - 同梱しないもの: 「ふっきれた」、私用 Mod(催眠など)、成人向けの素材、`motion-gen-textvrma`、BGM・効果音、性格系 Mod(リポジトリには残す)
 - 新規インストールで最初から ON: 「基本」Mod、機能 Mod の「モーションのタグ」「追いかけ」(`DEFAULT_ON_FEATURES`)
