@@ -1,0 +1,52 @@
+# 配布ビルドの設定(M8)。Mac は Mac で、Windows は Windows(または CI)でビルドする。
+# 自動アップデートは入れない(CLAUDE.md: 外部通信はモデルのダウンロードとLLMのみ)。publish は常に無効。
+appId: dev.vmaid.app
+productName: VMaid
+copyright: tamo
+directories:
+  output: release
+  buildResources: build
+files:
+  - out/**/*
+  - package.json
+  - '!**/*.map'
+# node-llama-cpp のネイティブバイナリ(.node / 動的ライブラリ)は、asar の外に展開しないと読み込めない
+asarUnpack:
+  - node_modules/node-llama-cpp/**
+  - node_modules/@node-llama-cpp/**
+# モデル登録表は、アプリ(asar)の外のリソースとして置く(main が resourcesPath から読む)
+extraResources:
+  - from: resources/models.json
+    to: models.json
+  # 配布用パック(自作・再配布可と確認できたものだけ)。私用パックは、アプリのデータフォルダにあり、ここには含まれない
+  - from: resources/mods/official
+    to: mods/official
+  - from: THIRD_PARTY_LICENSES.md
+    to: THIRD_PARTY_LICENSES.md
+  - from: LICENSE
+    to: LICENSE
+publish: null
+npmRebuild: false
+mac:
+  category: public.app-category.entertainment
+  target:
+    - target: dmg
+      arch: [arm64]
+  # Apple Developer の署名・公証は未設定(手順は docs/DISTRIBUTION.md)。
+  # ただし、Electron 本体の署名のままリソースを差し替えると署名が不整合になり、Apple Silicon で
+  # 「壊れている」と表示されて起動できなくなる。そこで、証明書なしの ad-hoc 署名(identity: "-")で
+  # 署名し直し、整合した状態にする。初回は「右クリック → 開く」が必要(Gatekeeper の警告)
+  identity: '-'
+  hardenedRuntime: false
+  notarize: false
+dmg:
+  title: ${productName} ${version}
+win:
+  target:
+    - target: nsis
+      arch: [x64]
+nsis:
+  oneClick: false
+  perMachine: false
+  allowToChangeInstallationDirectory: true
+  deleteAppDataOnUninstall: false

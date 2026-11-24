@@ -1,0 +1,88 @@
+# チェス Mod(公式)。キャラと、チェスで遊べます。盤面の窓で駒を押して行き先を押すか、チャットで「e2e4」と打って指します。先攻の人が白です。
+# 機能(盤面の窓・手の入力・キャラの強さ)と、基本の反応(始める言葉・手・勝ち・負け・引き分けのセリフ・表情・モーション)が、1 つになっている。素材は含まない(内蔵のモーションだけを使う)。
+# 基本の反応を消したいときは、Mod タブで、ルールを個別に OFF にする。自分の反応は、「ルール」タブで作る。
+id: game-chess
+name: チェス
+version: "0.1.0"
+feature: game-chess
+description: キャラと、チェスで遊べます。盤面の窓で駒を押して行き先を押すか、チャットで「e2e4」と打って指します。先攻の人が白です。キャラの強さ・先攻は、この Mod の設定です(4 つのゲームで共通)。
+slots:
+  - id: start-words
+    label: ゲームを始める言葉
+    kind: text
+    default: チェス,ちぇす
+    hint: カンマ・読点で区切って、複数。「チェスしよう」のように、入力に含まれていれば、ゲームが始まります。ふだんの会話に出る言葉は、入れないでください。
+  - id: start-lines
+    group: セリフ
+    label: 始めるときのセリフ
+    kind: lines
+    default: |
+      いいよ、チェスやろう!
+      じゃあ、よろしくね。負けないよ!
+  - id: char-move-lines
+    group: セリフ
+    label: キャラが 1 手打ったときのセリフ
+    kind: lines
+    default: |
+      じゃあ、ここ!
+      うーん、こう指そう
+      どうかな?
+  - id: user-win-lines
+    group: セリフ
+    label: あなたが勝ったときのセリフ
+    kind: lines
+    default: |
+      あー、詰まされちゃった…!
+      つよいね…! もう一局やろう!
+  - id: user-lose-lines
+    group: セリフ
+    label: あなたが負けたときのセリフ
+    kind: lines
+    default: |
+      チェックメイト! わたしの勝ち!
+      えへへ、勝っちゃった
+      もう一局やる?
+  - id: draw-lines
+    group: セリフ
+    label: 引き分けのセリフ
+    kind: lines
+    default: |
+      引き分けだね
+      いい勝負だった!
+rules:
+  - id: start
+    description: 「チェスしよう」と入力すると、ゲームを始める(AI には送らない)
+    when: { trigger: userMessage, keywords: ["{{slot:start-words}}"] }
+    do:
+      - { action: say, text: ["{{slot:start-lines}}"] }
+      - { action: startGame, game: chess }
+
+  - id: char-move
+    description: キャラが 1 手打ったとき、ひとこと言う
+    when: { trigger: gameMove, who: char, game: chess }
+    do:
+      - { action: say, text: ["{{slot:char-move-lines}}"] }
+      - { action: playMotion, motion: nod }
+
+  - id: user-win
+    description: ユーザーが勝ったとき(くやしがる)
+    when: { trigger: gameResult, result: win, game: chess }
+    do:
+      - { action: say, text: ["{{slot:user-win-lines}}"] }
+      - { action: setExpression, name: sad, value: 0.6, durationSec: 4 }
+      - { action: playMotion, motion: sad }
+
+  - id: user-lose
+    description: ユーザーが負けたとき(よろこぶ)
+    when: { trigger: gameResult, result: lose, game: chess }
+    do:
+      - { action: say, text: ["{{slot:user-lose-lines}}"] }
+      - { action: setExpression, name: happy, value: 0.8, durationSec: 4 }
+      - { action: playMotion, motion: happyHop }
+
+  - id: draw
+    description: 引き分けのとき
+    when: { trigger: gameResult, result: draw, game: chess }
+    do:
+      - { action: say, text: ["{{slot:draw-lines}}"] }
+      - { action: setExpression, name: relaxed, value: 0.6, durationSec: 3 }

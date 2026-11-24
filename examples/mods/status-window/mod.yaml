@@ -1,0 +1,63 @@
+# 状態表示ウィンドウ Mod。小さな窓に、「会話(AI が返答を考え中か)」と「モーション生成(生成中か)」を出す。
+# 「会話中に自動でポーズ」が、動きを作っているかどうかを、目で確かめるための窓です。
+# 窓に出るもの: ①会話の状態(考え中は、経過秒)と直近のやりとり ②モーション生成の状態(生成中は、経過秒と動きの説明)
+#   ③ AI が [pose:…] を付けた割合(低いと、動きは作られません) ④直近の出来事(新しい順。見送りになったときも出ます)
+# 連携: 本体のトリガー(返答を始めるとき・終わるとき・AI が動きを指定したとき)と、「モーション生成」Mod の通知(生成を始めた・終わった・失敗・前の動きを使った)を、ルールで受けます。
+#   「モーション生成」Mod が無いときは、その部分のルールだけが動かず、ほかは、そのまま動きます。
+# 通信: ありません。この Mod は、窓に文字を出すだけです(会話の文は、この PC の外へ出ません)。
+id: status-window
+name: 状態表示ウィンドウ
+version: "0.1.0"
+distribution: private
+description: 小さな窓に、会話(考え中か)と、モーション生成(生成中か)の状態を出します。「会話中に自動でポーズ」の動作確認に使えます。
+script:
+  apiVersion: 1
+  entry: main.js
+  permissions:
+    storage: true
+    ui:
+      list: true
+  contributes:
+    actions:
+      - type: note
+        label: 状態表示の窓に、出来事を伝える
+        description: "出来事の種類と、そのときの文(入力・返答・動きの説明)を、状態表示の窓に伝える。ふつうは、この Mod のルールが使います"
+        params:
+          - { name: kind, label: 出来事の種類, kind: enum, required: true, options: [{ value: user, label: 入力して考え始めた }, { value: reply, label: 返答が終わった }, { value: pose, label: AI が動きを指定した }, { value: genStart, label: 生成を始めた }, { value: genCached, label: 前の動きを使った }, { value: genDone, label: 生成が終わった }, { value: genFail, label: 生成に失敗した }] }
+          - { name: text, label: そのときの文, kind: string, template: true }
+rules:
+  - id: on-start
+    description: AI が返答を考え始めたとき、窓に出す(入力した文つき)
+    when: { trigger: replyStart }
+    do:
+      - { action: note, kind: user, text: "{{message}}" }
+  - id: on-done
+    description: 返答が終わったとき、窓に出す(返答の本文つき)
+    when: { trigger: replyDone }
+    do:
+      - { action: note, kind: reply, text: "{{reply}}" }
+  - id: on-pose
+    description: AI が返答に [pose:…] を付けたとき、窓に出す(動きの説明つき)
+    when: { trigger: poseTag }
+    do:
+      - { action: note, kind: pose, text: "{{pose}}" }
+  - id: gen-start
+    description: モーション生成 Mod が、生成を始めたとき、窓に出す
+    when: { trigger: motion-gen-textvrma/generating }
+    do:
+      - { action: note, kind: genStart }
+  - id: gen-cached
+    description: モーション生成 Mod が、作らずに前の動きを使ったとき、窓に出す
+    when: { trigger: motion-gen-textvrma/cached }
+    do:
+      - { action: note, kind: genCached }
+  - id: gen-done
+    description: モーション生成 Mod が、生成を終えたとき、窓に出す
+    when: { trigger: motion-gen-textvrma/generated }
+    do:
+      - { action: note, kind: genDone }
+  - id: gen-fail
+    description: モーション生成 Mod が、生成に失敗したとき、窓に出す
+    when: { trigger: motion-gen-textvrma/failed }
+    do:
+      - { action: note, kind: genFail }

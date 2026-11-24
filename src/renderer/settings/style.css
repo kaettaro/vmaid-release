@@ -1,0 +1,224 @@
+:root {
+  color-scheme: light dark;
+  --bg: #f6f6f9;
+  --panel: #ffffff;
+  --line: #dcdce4;
+  --text: #25252e;
+  --sub: #6b6e80;
+  --accent: #d6457f;
+  --ok: #1f7a3f;
+  --ng: #b3261e;
+  --warn-bg: #fff4dc;
+  --warn-line: #e3b04b;
+  --err-bg: #fde8e8;
+}
+@media (prefers-color-scheme: dark) {
+  :root {
+    --bg: #1d1e26;
+    --panel: #262833;
+    --line: #3a3d4d;
+    --text: #e8e9f0;
+    --sub: #9a9db0;
+    --accent: #e0679a;
+    --ok: #6fd08f;
+    --ng: #ff8a80;
+    --warn-bg: #3a2f14;
+    --warn-line: #8a6a22;
+    --err-bg: #3a1c1f;
+  }
+}
+* { box-sizing: border-box; }
+html, body, #root { margin: 0; height: 100%; background: var(--bg); color: var(--text); font: 14px/1.6 system-ui, 'Hiragino Sans', 'Yu Gothic UI', sans-serif; }
+.settings { display: flex; height: 100%; }
+.tabs { display: flex; flex-direction: column; gap: 2px; width: 150px; padding: 12px 8px; border-right: 1px solid var(--line); background: var(--panel); }
+.tab { text-align: left; padding: 8px 12px; border: none; border-radius: 8px; background: transparent; color: var(--text); font: inherit; cursor: pointer; }
+.tab:hover { background: var(--bg); }
+.tab.active { background: var(--accent); color: #fff; }
+.content { flex: 1; overflow-y: auto; padding: 16px 24px 32px; }
+h1 { margin: 0 0 4px; font-size: 20px; }
+.muted { color: var(--sub); margin: 0 0 16px; }
+.field { display: flex; flex-direction: column; gap: 4px; margin: 0 0 16px; }
+.field-label { font-weight: 600; }
+.field-hint { color: var(--sub); font-size: 12px; }
+input[type='text'], input[type='password'], input[type='number'], textarea {
+  width: 100%; padding: 7px 9px; border: 1px solid var(--line); border-radius: 8px; background: var(--panel); color: var(--text); font: inherit;
+}
+input:focus, textarea:focus { outline: 2px solid var(--accent); outline-offset: -1px; }
+input:disabled { opacity: 0.5; }
+input[type='number'] { width: 110px; }
+textarea { resize: vertical; }
+code { padding: 1px 5px; border-radius: 4px; background: var(--line); font-size: 12px; }
+button { padding: 6px 14px; border: 1px solid var(--line); border-radius: 8px; background: var(--panel); color: var(--text); font: inherit; cursor: pointer; }
+button:hover:not(:disabled) { border-color: var(--accent); }
+button:disabled { opacity: 0.45; cursor: default; }
+button.primary { background: var(--accent); border-color: var(--accent); color: #fff; }
+.row { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+.row input[type='password'] { flex: 1; min-width: 160px; width: auto; }
+.radios { display: flex; flex-direction: column; gap: 4px; }
+.radios label { display: flex; align-items: center; gap: 8px; }
+.radios .disabled { color: var(--sub); }
+.notice { padding: 10px 12px; margin: -8px 0 16px; border: 1px solid var(--warn-line); border-radius: 8px; background: var(--warn-bg); font-size: 13px; }
+.notice strong { display: block; }
+.notice.error { margin: 0 0 16px; border-color: var(--ng); background: var(--err-bg); }
+.ok { color: var(--ok); }
+.ng { color: var(--ng); }
+
+.model-list { list-style: none; margin: 0 0 16px; padding: 0; display: flex; flex-direction: column; gap: 10px; }
+.model { padding: 12px 14px; border: 1px solid var(--line); border-radius: 10px; background: var(--panel); }
+.model.selected { border-color: var(--accent); }
+.model-head { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+.radio-line { display: flex; align-items: center; gap: 8px; }
+.badge { padding: 1px 8px; border-radius: 10px; background: var(--accent); color: #fff; font-size: 11px; }
+.badge.warn { background: var(--warn-line); color: #3a2f14; }
+.small { font-size: 12px; }
+.model .row { margin-top: 8px; }
+progress { width: 220px; height: 10px; }
+.custom { margin-top: 8px; }
+.path { max-width: 100%; overflow-wrap: anywhere; }
+h2 { margin: 20px 0 8px; font-size: 15px; }
+.check { display: flex; align-items: flex-start; gap: 8px; margin-bottom: 16px; }
+.stats { padding: 12px 14px; margin-bottom: 8px; border: 1px solid var(--line); border-radius: 10px; background: var(--panel); }
+button.danger { color: var(--ng); }
+select { padding: 6px 8px; border: 1px solid var(--line); border-radius: 8px; background: var(--panel); color: var(--text); font: inherit; }
+
+/* --- ルールタブ --- */
+.rules-head { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
+.seg { display: inline-flex; border: 1px solid var(--line); border-radius: 8px; overflow: hidden; }
+.seg button { border: none; border-radius: 0; background: var(--panel); }
+.seg button.on { background: var(--accent); color: #fff; }
+.rules-layout { display: flex; gap: 16px; align-items: flex-start; margin-bottom: 12px; }
+.rule-list { list-style: none; margin: 0; padding: 0; width: 220px; flex: none; display: flex; flex-direction: column; gap: 4px; }
+.rule-item { display: flex; align-items: center; gap: 6px; border: 1px solid var(--line); border-radius: 8px; background: var(--panel); padding: 2px 6px 2px 8px; }
+.rule-item.selected { border-color: var(--accent); }
+.rule-name { flex: 1; min-width: 0; text-align: left; border: none; background: none; padding: 6px 4px; display: flex; flex-direction: column; line-height: 1.3; }
+.rule-name .off { opacity: 0.45; text-decoration: line-through; }
+.rule-detail { flex: 1; min-width: 0; }
+.rule-actions { margin-bottom: 8px; }
+.rule-editor h3 { margin: 16px 0 6px; font-size: 14px; color: var(--accent); }
+.node { padding: 10px 12px; margin-bottom: 8px; border: 1px solid var(--line); border-radius: 10px; background: var(--panel); }
+.node-head { display: flex; align-items: center; justify-content: space-between; gap: 8px; }
+.node-head select { flex: 1; font-weight: 600; }
+.node-tools { display: flex; gap: 4px; }
+button.icon { padding: 2px 8px; line-height: 1.2; }
+.pf { display: flex; flex-direction: column; gap: 3px; margin: 8px 0; }
+.pf-label { font-size: 12px; font-weight: 600; }
+.pf-check { display: flex; align-items: center; gap: 6px; }
+.pf-hint { color: var(--sub); font-size: 12px; }
+.req { color: var(--ng); }
+.add-menu { margin-top: 4px; }
+input[type='time'] { padding: 6px 8px; border: 1px solid var(--line); border-radius: 8px; background: var(--panel); color: var(--text); font: inherit; width: 140px; }
+.groups { display: flex; flex-direction: column; gap: 10px; margin-bottom: 16px; }
+.group { padding: 10px 12px; border: 1px solid var(--line); border-radius: 10px; background: var(--panel); }
+.checks { display: flex; flex-wrap: wrap; gap: 4px 14px; margin-top: 8px; }
+.check-item { display: flex; align-items: center; gap: 5px; }
+.yaml-text { width: 100%; font: 12.5px/1.55 ui-monospace, 'SF Mono', Menlo, Consolas, monospace; white-space: pre; tab-size: 2; }
+.yaml .notice { margin: 8px 0; }
+.switch { display: flex; align-items: center; }
+.rule-id { font-weight: 600; overflow-wrap: anywhere; }
+.rule-desc { display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+
+.motion-list { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 4px; }
+.motion-list li { display: flex; align-items: center; gap: 10px; padding: 6px 10px; border: 1px solid var(--line); border-radius: 8px; background: var(--panel); }
+.motion-list .radio-line { flex: none; }
+.motion-path { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.notice.ok-box { border-color: var(--ok); background: transparent; }
+.reject-list { margin: 6px 0 0; padding-left: 18px; }
+.reject-list code { overflow-wrap: anywhere; font-size: 11px; }
+.pack { flex-direction: column; align-items: stretch !important; }
+.pack h3 { margin: 12px 0 4px; font-size: 13px; }
+.pack-detail { padding: 4px 0 8px 22px; }
+.pack .reject-list { margin: 4px 0; }
+
+
+/* --- モーション一覧(仮想化・タグ・複数選択)--- */
+.import-box { padding: 10px 12px; border: 1px solid var(--line); border-radius: 8px; background: var(--panel); display: flex; flex-direction: column; gap: 8px; }
+.field-inline { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+.field-inline input[type='text'] { flex: 1; min-width: 220px; }
+.field-inline textarea { flex: 1; min-width: 220px; font: inherit; }
+.slot-field { margin-top: 6px; }
+.effects-editor { margin: 8px 0; }
+.effects-editor textarea.mono { width: 100%; font-family: ui-monospace, Consolas, monospace; font-size: 12px; box-sizing: border-box; }
+.effects-editor pre { white-space: pre-wrap; }
+input.num { width: 90px; }
+.progress-line { display: flex; align-items: center; gap: 10px; }
+.progress-line progress { flex: 1; max-width: 360px; }
+.mtoolbar { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; margin: 12px 0 8px; }
+.msearch { flex: 1; min-width: 220px; }
+.tagchips { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 8px; max-height: 132px; overflow-y: auto; }
+button.chip { padding: 2px 10px; border-radius: 12px; font-size: 12px; }
+button.chip.on { background: var(--accent); border-color: var(--accent); color: #fff; }
+button.chip.more { border-style: dashed; }
+.mhead { display: flex; align-items: center; justify-content: space-between; gap: 12px; flex-wrap: wrap; padding: 4px 2px 6px; }
+.bulkbar { display: flex; flex-direction: column; gap: 8px; padding: 10px 12px; margin-bottom: 8px; border: 1px solid var(--accent); border-radius: 8px; background: var(--panel); }
+.mlist { height: 52vh; min-height: 260px; overflow-y: auto; border: 1px solid var(--line); border-radius: 8px; background: var(--bg); }
+.mrow { height: 46px; box-sizing: border-box; display: flex; align-items: center; gap: 10px; padding: 0 10px; border-bottom: 1px solid var(--line); }
+.mrow.sel { background: color-mix(in srgb, var(--accent) 14%, transparent); }
+.mmain { flex: 1; min-width: 0; display: flex; flex-direction: column; justify-content: center; gap: 2px; }
+.mname { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-weight: 600; }
+.mname .badge.origin { margin-left: 8px; background: var(--line); color: var(--text); font-weight: 400; }
+.mtags { display: flex; gap: 4px; overflow: hidden; white-space: nowrap; }
+.tag { display: inline-flex; align-items: center; border: 1px solid var(--line); border-radius: 10px; font-size: 11px; background: var(--panel); }
+.tag.locked { opacity: 0.8; }
+.tag .tagbtn, .tag .tagx { border: none; background: transparent; padding: 0 6px; font-size: 11px; line-height: 1.5; border-radius: 10px; }
+.tag .tagx { padding-left: 0; color: var(--sub); }
+.idle-radio { flex: none; font-size: 12px; }
+.mrow input.rename { width: 100%; }
+.tagmanager { margin-top: 16px; }
+.tag-table { list-style: none; margin: 8px 0 0; padding: 0; max-height: 280px; overflow-y: auto; display: flex; flex-direction: column; gap: 4px; }
+.tag-table li { display: flex; align-items: center; gap: 10px; padding: 4px 8px; border: 1px solid var(--line); border-radius: 8px; background: var(--panel); }
+.tag-table .tagname { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; }
+
+/* --- ルール一覧(検索・タグ・複数選択・一括操作・仮想化)--- */
+.rule-pane { width: 340px; flex: none; display: flex; flex-direction: column; min-width: 0; }
+.rule-tools { display: flex; gap: 6px; align-items: center; margin-bottom: 6px; }
+.rule-tools input[type='search'] { flex: 1; min-width: 0; }
+.rule-chips { max-height: 88px; }
+.rlist { height: 54vh; min-height: 260px; overflow-y: auto; border: 1px solid var(--line); border-radius: 8px; background: var(--bg); }
+.rrow { height: 58px; box-sizing: border-box; display: flex; align-items: center; gap: 6px; padding: 0 8px; border-bottom: 1px solid var(--line); }
+.rrow.sel { background: color-mix(in srgb, var(--accent) 14%, transparent); }
+.rrow.selected { box-shadow: inset 3px 0 0 var(--accent); }
+.rrow .rule-name { padding: 2px 4px; overflow: hidden; }
+.rrow .rule-id { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.rule-desc1 { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.rtags { font-size: 11px; color: var(--accent); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.rules-layout { flex-wrap: wrap; }
+.rule-detail { min-width: 340px; }
+
+/* ON/OFF のトグルスイッチ(丸が左右に動く)。複数を選ぶ「選択」のチェックボックスとは、別の見た目にする */
+.toggle { position: relative; flex: none; width: 38px; height: 22px; padding: 0; border: none; border-radius: 11px; background: color-mix(in srgb, var(--text, #888) 28%, transparent); cursor: pointer; transition: background 0.15s; }
+.toggle::after { content: ''; position: absolute; top: 3px; left: 3px; width: 16px; height: 16px; border-radius: 50%; background: #fff; box-shadow: 0 1px 2px rgba(0, 0, 0, 0.3); transition: transform 0.15s; }
+.toggle.on { background: var(--accent); }
+.toggle.on::after { transform: translateX(16px); }
+.toggle:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+.toggle:disabled { opacity: 0.45; cursor: not-allowed; }
+/* Shift+クリックの範囲選択で、文字が選択されて青くならないように */
+.mrow, .rrow { user-select: none; }
+.history-list { list-style: none; margin: 8px 0; padding: 0; max-height: 360px; overflow-y: auto; border: 1px solid var(--line, #373a49); border-radius: 6px; }
+.history-list li { padding: 6px 10px; border-bottom: 1px solid var(--line, #373a49); }
+.history-list li:last-child { border-bottom: 0; }
+.history-list .h-text { white-space: pre-wrap; word-break: break-word; padding-left: 22px; }
+.history-list .h-user .h-text { color: var(--accent, #e0679a); }
+
+/* --- Mod タブ: 1 Mod = 1 行、開閉式 --- */
+.mod-card { padding: 6px 10px; }
+.mod-head { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+.mod-chevron { border: none; background: transparent; padding: 0 4px; cursor: pointer; font-size: 14px; color: inherit; }
+.mod-title { border: none; background: transparent; padding: 0; cursor: pointer; font: inherit; color: inherit; text-align: left; }
+.mod-summary { margin: 2px 0 0 28px; }
+.mod-body { padding: 6px 0 4px 28px; display: flex; flex-direction: column; gap: 6px; }
+.mod-body h3 { margin: 8px 0 2px; font-size: 13px; }
+.mod-rules li { display: flex; align-items: center; gap: 6px; flex-wrap: wrap; }
+/* 以前の専用タブの中身を、Mod の中に埋め込む(見出しは Mod の名前で足りる) */
+.mod-embed { border-left: 2px solid var(--line); padding-left: 10px; }
+.mod-embed h1 { display: none; }
+
+.mod-rules-panel { margin-top: 16px; }
+.mod-rules-group { margin: 6px 0; padding: 6px 10px; border: 1px solid var(--line); border-radius: 8px; background: var(--panel); }
+.mod-rules-group summary { cursor: pointer; }
+
+/* --- 吹き出し拡張の見本(キャラ画面の吹き出しと同じ変数・形。位置は、ここでは固定しない) --- */
+.bubble-preview { display: flex; flex-direction: column; gap: 22px; align-items: flex-start; padding: 14px 18px 26px; background: repeating-conic-gradient(#e9ebf0 0 25%, #f6f7fa 0 50%) 0 0 / 20px 20px; border-radius: 8px; }
+.bubble-preview .bubble { position: relative; display: inline-block; box-sizing: border-box; padding: 10px 12px; max-width: 320px; border-radius: 14px; background: var(--b-bg, rgba(255, 255, 255, 0.96)); color: var(--b-fg, #2a2a35); font: calc(14px * var(--b-scale, 1)) / 1.5 var(--b-font, system-ui, sans-serif); font-weight: var(--b-weight, 400); filter: drop-shadow(0 0 0.6px var(--b-border, transparent)) drop-shadow(0 0 0.6px var(--b-border, transparent)) drop-shadow(0 2px 5px rgba(0, 0, 0, 0.3)); }
+.bubble-preview .bubble::after { content: ''; position: absolute; width: 0; height: 0; border: 8px solid transparent; top: 100%; left: 24px; border-top-color: var(--b-bg, rgba(255, 255, 255, 0.96)); }
+.bubble-preview .bubble-user { background: var(--b-bg, rgb(206, 224, 255)); }
+.bubble-preview .bubble-user::after { border-top-color: var(--b-bg, rgb(206, 224, 255)); }

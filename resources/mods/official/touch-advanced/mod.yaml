@@ -1,0 +1,187 @@
+# ふれあい Mod(公式)。触った部位の判定・長押し・なでる・続けて触られた、と、その基本の反応(段階的に変わる・親密度で変わる)が、1 つになっている。
+# 反応は、すべて**自作の内蔵モーション**だけで作っている。素材(外部のモーション)は含まない。基本の反応を消したいときは、Mod タブで、ルールを個別に OFF にする。
+# 使うには、公式の Mod「親密度と気分」も ON にすると、親密度・気分に関わる反応も動く(OFF のものは、動かないだけ)。
+id: touch-advanced
+name: 高度な触れ合い
+version: "0.3.0"
+feature: touch-advanced
+description: 触った部位の判定、長押し・なでる・なでるのをやめた・続けて触られた、のルールが使えます。基本の反応として、頭をなでる(段階的に変わる)・長押し・お腹をなでる(くすぐったい)・続けて突くと怒る・放置でさみしがる、が入っています。親密度と気分で、反応が少し変わります。
+requires: [affection-mood]
+
+slots:
+  - { id: head-more-sec, group: 頭をなでる, label: 「しばらく」になるまでのなでる時間, kind: number, default: "3", min: 0, max: 600, unit: 秒 }
+  - { id: head-long-sec, group: 頭をなでる, label: 「長いあいだ」になるまでのなでる時間, kind: number, default: "9", min: 0, max: 600, unit: 秒 }
+  - { id: poke-count, group: 続けて突かれたとき, label: 怒り出す、突かれた回数, kind: number, default: "4", min: 2, max: 20, unit: 回 }
+  - { id: poke-within, group: 続けて突かれたとき, label: その回数を数える時間, kind: number, default: "4", min: 1, max: 60, unit: 秒 }
+  - { id: poke-cooldown, group: 続けて突かれたとき, label: 次に怒るまでの最小の間隔, kind: number, default: "10", min: 0, max: 3600, unit: 秒 }
+  - { id: lonely-sec, group: 放置・さみしい, label: 放置してから、さみしがるまで, kind: number, default: "900", min: 60, max: 86400, unit: 秒 }
+  - { id: lonely-affection, group: 放置・さみしい, label: さみしがる、親密度, kind: number, default: "40", min: 0, max: 100 }
+  - { id: lonely-cooldown, group: 放置・さみしい, label: 次にさみしがるまでの最小の間隔, kind: number, default: "1800", min: 0, max: 86400, unit: 秒 }
+  - id: pet-head-start-lines
+    group: 頭をなでる
+    label: なで始めのセリフ
+    kind: lines
+    default: |
+      なでなで…
+      えへへ
+      ん…
+  - id: pet-head-more-lines
+    group: 頭をなでる
+    label: しばらくなでたときのセリフ
+    kind: lines
+    default: |
+      きもちいい…
+      もっとして
+      あったかい…
+  - id: pet-head-long-lines
+    group: 頭をなでる
+    label: 長いあいだなでたときのセリフ
+    kind: lines
+    default: |
+      もう…照れちゃうよ
+      そんなに、なでられると…
+  - id: pet-head-end-lines
+    group: 頭をなでる
+    label: なでるのをやめたときのセリフ
+    kind: lines
+    default: |
+      もう終わり?
+      あ…
+      ありがとう
+  - id: hold-head-lines
+    group: 長押し
+    label: 頭を長押ししたときのセリフ
+    kind: lines
+    default: |
+      ん?
+      どうしたの?
+  - id: pet-belly-lines
+    group: お腹・手
+    label: お腹をなでたときのセリフ
+    kind: lines
+    default: |
+      くすぐったいよ!
+      ひゃっ
+      あはは、やめて〜
+  - id: pet-hand-lines
+    group: お腹・手
+    label: 手をなでたときのセリフ
+    kind: lines
+    default: |
+      えへへ、手をつなぐの?
+      うれしいな
+  - id: poke-annoyed-lines
+    group: 続けて突かれたとき
+    label: 続けて突かれたときのセリフ
+    kind: lines
+    default: |
+      もう!つつかないで
+      しつこいよ!
+      むー…
+  - id: lonely-lines
+    group: 放置・さみしい
+    label: さみしがるときのセリフ
+    kind: lines
+    default: |
+      さみしいな…
+      まだかな…
+  - id: glad-return-lines
+    group: 放置・さみしい
+    label: さみしいときに、なでてもらったときのセリフ
+    kind: lines
+    default: |
+      あ…!来てくれた
+      うれしい!
+rules:
+  # --- 頭をなでる: なで始め → しばらく → 長いあいだ、と段階的に変わる ---
+  - id: pet-head-start
+    description: 頭をなで始めると、頭を差し出して、うれしそうにする(親密度が上がる)
+    when: { trigger: stroke, part: head, minSec: 0 }
+    do:
+      - { action: playMotion, motion: offerHead, durationSec: 5 }
+      - { action: setExpression, name: happy, value: 0.7, durationSec: 4 }
+      - { action: say, text: ["{{slot:pet-head-start-lines}}"] }
+      - { action: changeAffection, delta: 1 }
+  - id: pet-head-more
+    description: しばらくなで続けると、気持ちよさそうにして、気分がうれしくなる
+    when: { trigger: stroke, part: head, minSec: "{{slot:head-more-sec}}" }
+    do:
+      - { action: setExpression, name: relaxed, value: 0.9, durationSec: 5 }
+      - { action: say, text: ["{{slot:pet-head-more-lines}}"] }
+      - { action: setMood, mood: happy, durationSec: 90 }
+      - { action: changeAffection, delta: 2 }
+  - id: pet-head-long
+    description: 長いあいだなでてもらうと、照れる(親密度が高いと、よろこぶ)
+    when: { trigger: stroke, part: head, minSec: "{{slot:head-long-sec}}" }
+    do:
+      - { action: playMotion, motion: shy }
+      - { action: say, text: ["{{slot:pet-head-long-lines}}"] }
+      - { action: setMood, mood: shy, durationSec: 60 }
+  - id: pet-head-end
+    description: なでるのをやめると、名残惜しそうにする
+    when: { trigger: strokeEnd, part: head, minSec: 3 }
+    do:
+      - { action: wait, sec: 1.2 }
+      - { action: say, text: ["{{slot:pet-head-end-lines}}"] }
+
+  # --- 長押し ---
+  - id: hold-head
+    description: 頭を長押しすると、首をかしげる
+    when: { trigger: hold, part: head, minSec: 1 }
+    do:
+      - { action: playMotion, motion: tilt }
+      - { action: say, text: ["{{slot:hold-head-lines}}"] }
+
+  # --- お腹・手 ---
+  - id: pet-belly
+    description: お腹をなでると、くすぐったがる
+    when: { trigger: stroke, part: belly, minSec: 0.5 }
+    do:
+      - { action: playMotion, motion: ticklish }
+      - { action: setExpression, name: surprised, value: 0.6, durationSec: 2 }
+      - { action: say, text: ["{{slot:pet-belly-lines}}"] }
+  - id: pet-hand
+    description: 手をなでると、照れて、よろこぶ(親密度が上がる)
+    when: { trigger: stroke, part: hand, minSec: 1 }
+    do:
+      - { action: playMotion, motion: happyHop }
+      - { action: say, text: ["{{slot:pet-hand-lines}}"] }
+      - { action: changeAffection, delta: 1 }
+
+  # --- 続けて触る ---
+  - id: poke-annoyed
+    description: 続けて突かれると、びっくり → ふくれる
+    when: { trigger: click }
+    if:
+      - { condition: recentTouches, count: "{{slot:poke-count}}", withinSec: "{{slot:poke-within}}" }
+      - { condition: cooldown, sec: "{{slot:poke-cooldown}}" }
+    do:
+      - { action: playMotion, motion: surprised }
+      - { action: setExpression, name: angry, value: 0.6, durationSec: 4 }
+      - { action: say, text: ["{{slot:poke-annoyed-lines}}"] }
+      - { action: setMood, mood: annoyed, durationSec: 30 }
+      - { action: changeAffection, delta: -1 }
+
+  # --- 気分・親密度で変わる ---
+  - id: lonely
+    description: 親密度がある程度あるのに、長いあいだ放っておかれると、さみしがる
+    when: { trigger: idle, afterSec: "{{slot:lonely-sec}}" }
+    if:
+      - { condition: affection, min: "{{slot:lonely-affection}}" }
+      - { condition: cooldown, sec: "{{slot:lonely-cooldown}}" }
+    do:
+      - { action: playMotion, motion: sad }
+      - { action: setExpression, name: sad, value: 0.7, durationSec: 6 }
+      - { action: say, text: ["{{slot:lonely-lines}}"] }
+      - { action: setMood, mood: sad, durationSec: 120 }
+  - id: glad-return
+    description: さみしがっているとき(気分)に、なでてもらうと、よろこぶ
+    when: { trigger: stroke, part: head, minSec: 0.5 }
+    if:
+      - { condition: mood, is: sad }
+    do:
+      - { action: playMotion, motion: happyHop }
+      - { action: setExpression, name: happy, value: 1, durationSec: 4 }
+      - { action: say, text: ["{{slot:glad-return-lines}}"] }
+      - { action: setMood, mood: happy, durationSec: 90 }
+      - { action: changeAffection, delta: 2 }

@@ -1,0 +1,79 @@
+# ニュース(RSS)Mod。コミュニティ Mod(スクリプト Mod)の例です。アプリには同梱しません(公式 Mod は、外部へ通信しない決まりのため)。
+# 設定の「フィードの URL」に、読みたいニュースサイトの RSS / Atom の URL を書くと、新着を、キャラが話してくれます。
+# - 通信するのは、あなたが書いて、確認で許可した、https のサイトだけです(あなたの IP アドレスが、そのサイトから見えます)。会話・入力は、送りません
+# - 最初の取得では、いまある記事を「既読」にするだけで、話しません。そのあとの、新しい記事だけを話します
+# - 「話しかけ」Mod が ON のとき動きます(話しかけ控え: 静かにして・会話中・夜間・間隔・1 日の上限 が、効きます)
+# - 言い方を「AI」にすると、AI にニュースの内容を渡して、キャラの口調で話させます(AI は、あなたが設定した LLM です)
+id: news-rss
+name: ニュース(RSS)
+version: "0.1.0"
+distribution: private
+requires: [talk]
+description: 読みたいニュースサイトの RSS / Atom の新着を、キャラが話してくれます(1 件ずつ話題として / まとめて新着を、が選べます)。
+script:
+  apiVersion: 1
+  entry: main.js
+  settings:
+    - { name: feeds, label: フィードの URL, kind: urls, hint: "RSS / Atom の URL を、1 行に 1 つ(最大 10。https のみ)。転送(リダイレクト)されるサイトは、転送先の URL を書いてください" }
+    - name: mode
+      label: 知らせ方
+      kind: enum
+      default: single
+      options:
+        - { value: single, label: 1 件ずつ、話題として(間隔をあけて、ばらばらに) }
+        - { value: digest, label: まとめて、新着を教える }
+    - name: style
+      label: 言い方
+      kind: enum
+      default: template
+      options:
+        - { value: template, label: テンプレート(AI を使わない) }
+        - { value: ai, label: AI(キャラの口調で) }
+    - name: onSelect
+      label: 窓で見出しを選んだとき
+      kind: enum
+      default: ai
+      options:
+        - { value: ai, label: AI で、感想を言って、話を広げる(キャラの口調で) }
+        - { value: say, label: ひとこと言うだけ(AI を使わない。そのあと、チャットで話せます) }
+    - { name: spacingMin, label: 1 件ずつのとき、話す間隔の目安(分), kind: number, default: 30, hint: "±30% ばらつかせます" }
+    - { name: maxPerDigest, label: まとめるとき、見出しを読む件数, kind: number, default: 3 }
+    - { name: useContext, label: 最近のニュースを、会話の話題に足す, kind: boolean, default: true, hint: "オンなら、「さっきのニュースって?」と話しかけて、会話を広げられます" }
+  permissions:
+    networkFrom: [feeds]
+    storage: true
+    say: true
+    emit: true
+    ai: true
+    context: true
+    ui:
+      list: true
+      openLink: true
+  contributes:
+    triggers:
+      - { type: ready, label: 話すニュースがあるとき }
+    actions:
+      - { type: checkFeeds, label: フィードを確認する, description: "設定したフィードを取得して、新着を、話す順番に積む" }
+      - { type: poke, label: 話す時機か確かめる, description: "話すニュースがあれば、「話すニュースがあるとき」を起こす" }
+      - { type: tellNews, label: ニュースを話す, description: "順番待ちのニュースを、セリフ(または AI)で話す" }
+slots:
+  - { id: check-min, group: 確認の間隔, label: フィードを確認する間隔, kind: number, default: "20", min: 5, max: 1440, unit: 分, hint: 短くしすぎると、サイトに負担をかけます }
+  - { id: poke-min, group: 確認の間隔, label: 話す時機を確かめる間隔, kind: number, default: "5", min: 1, max: 120, unit: 分, hint: 話しかけ控えで話せなかったとき、あとで話すための確認です }
+rules:
+  - id: check
+    description: 一定の間隔(既定 20 分)で、フィードを確認して、新着を積む
+    when: { trigger: interval, everyMin: "{{slot:check-min}}" }
+    do:
+      - { action: checkFeeds }
+  - id: poke
+    description: 一定の間隔(既定 5 分)で、話す時機か確かめる(話しかけ控えで話せなかったとき、あとで話すため)
+    when: { trigger: interval, everyMin: "{{slot:poke-min}}" }
+    do:
+      - { action: poke }
+  - id: tell
+    description: 話すニュースがあるとき、話してよければ、話す
+    when: { trigger: ready }
+    if:
+      - { condition: canTalk }
+    do:
+      - { action: tellNews }

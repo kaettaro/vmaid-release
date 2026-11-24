@@ -1,0 +1,197 @@
+html,
+body,
+#root {
+  margin: 0;
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+  background: transparent;
+  user-select: none;
+}
+.stage {
+  position: relative;
+  width: 100%;
+  height: 100%;
+}
+.canvas {
+  display: block;
+  width: 100%;
+  height: 100%;
+}
+.hint {
+  position: absolute;
+  left: 16px;
+  right: 16px;
+  bottom: 16px;
+  margin: 0;
+  padding: 10px 12px;
+  border-radius: 10px;
+  background: rgba(30, 30, 40, 0.85);
+  color: #fff;
+  font: 13px/1.5 system-ui, sans-serif;
+  text-align: center;
+  pointer-events: none;
+}
+.hint[data-ui] { pointer-events: auto; }
+.hint-action { margin-left: 10px; padding: 2px 10px; font: inherit; color: #fff; background: rgba(255, 255, 255, 0.18); border: 1px solid rgba(255, 255, 255, 0.5); border-radius: 6px; cursor: pointer; }
+.hint-action:hover { background: rgba(255, 255, 255, 0.3); }
+.hint.error {
+  background: rgba(150, 30, 40, 0.9);
+}
+
+/* --- 吹き出し(UI全体の縮小率は --ui-scale。ウィンドウが小さいときに見切れないようにする) --- */
+.bubble {
+  position: absolute;
+  box-sizing: border-box;
+  padding: 10px 12px;
+  border-radius: 14px;
+  /* 吹き出し拡張(Mod)が、色・フォント・大きさ・縁の色を、変数(--b-…)で上書きする。変数が無いときは、いつもの見た目 */
+  background: var(--b-bg, rgba(255, 255, 255, 0.96));
+  color: var(--b-fg, #2a2a35);
+  font: calc(14px * var(--ui-scale, 1) * var(--b-scale, 1)) / 1.5 var(--b-font, system-ui, 'Hiragino Sans', 'Yu Gothic UI', sans-serif);
+  font-weight: var(--b-weight, 400);
+  /* box-shadow ではなく drop-shadow: しっぽ(▽)にも影が付き、明るい背景の上でも輪郭が分かる。縁の色は、細い光で縁取る */
+  filter: drop-shadow(0 0 0.6px var(--b-border, transparent)) drop-shadow(0 0 0.6px var(--b-border, transparent)) drop-shadow(0 2px 5px rgba(0, 0, 0, 0.3));
+  user-select: text;
+}
+.bubble::after {
+  content: '';
+  position: absolute;
+  width: 0;
+  height: 0;
+  border: 8px solid transparent;
+}
+/* 頭の位置が分かるときは、頭のすぐ上に付ける(横に広いモデルは小さく映り、窓の上端に固定すると、頭から離れるため)。
+   窓の上にはみ出さないよう、中の高さは頭の上の空きに収める */
+.stage[data-head] .bubble-character {
+  top: auto;
+  bottom: calc(100% - var(--head-top) + 12px * var(--ui-scale, 1));
+}
+.stage[data-head] .bubble-character .bubble-scroll {
+  max-height: min(calc(150px * var(--ui-scale, 1)), calc(var(--head-top) - 40px * var(--ui-scale, 1)));
+}
+/* キャラのセリフ: 頭上。しっぽ(▽)でキャラを指す */
+.bubble-character {
+  top: calc(8px * var(--ui-scale, 1));
+  left: 50%;
+  transform: translateX(-50%);
+  width: min(calc(340px * var(--ui-scale, 1)), calc(100% - 16px));
+}
+.bubble-character::after {
+  top: 100%;
+  left: calc(50% - 8px);
+  border-top-color: var(--b-bg, rgba(255, 255, 255, 0.96));
+}
+.bubble-character.is-error {
+  background: rgba(255, 236, 236, 0.97);
+  color: #8a1f2b;
+}
+.bubble-character.is-error::after {
+  border-top-color: rgba(255, 236, 236, 0.97);
+}
+/* 自分の入力: キャラと画面中央下の間に置く。位置としっぽの向きは ChatBubble.tsx が計算してインラインで指定する。
+   しっぽ(.tail)は、下向き▽を回転させて画面中央下(=自分)を指す */
+.bubble-user {
+  width: min(calc(260px * var(--ui-scale, 1)), calc(100% - 16px));
+  background: var(--b-bg, rgb(206, 224, 255));
+}
+.bubble-user::after {
+  display: none;
+}
+.bubble-user .tail {
+  position: absolute;
+  background: var(--b-bg, rgb(206, 224, 255));
+  pointer-events: none;
+}
+.bubble-scroll {
+  max-height: calc(150px * var(--ui-scale, 1));
+  overflow-y: auto;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+}
+.bubble .sent-prev {
+  margin-bottom: 4px;
+  max-height: calc(2.9em);
+  overflow: hidden;
+  color: #6b7488;
+  font-size: 0.85em;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+}
+.bubble-scroll.sent {
+  color: #4a5368;
+}
+.bubble textarea {
+  display: block;
+  width: 100%;
+  resize: none;
+  border: none;
+  outline: none;
+  background: transparent;
+  color: inherit;
+  font: inherit;
+  user-select: text;
+}
+.bubble .keys {
+  margin-top: 2px;
+  color: #7a8399;
+  font-size: calc(10.5px * var(--ui-scale, 1));
+}
+.stop {
+  position: absolute;
+  top: calc(10px * var(--ui-scale, 1));
+  right: calc(12px * var(--ui-scale, 1));
+  width: calc(22px * var(--ui-scale, 1));
+  height: calc(22px * var(--ui-scale, 1));
+  padding: 0;
+  border: none;
+  border-radius: 50%;
+  background: rgba(30, 30, 40, 0.35);
+  cursor: pointer;
+  opacity: 0.55;
+  transition: opacity 0.15s;
+}
+.stop:hover {
+  opacity: 1;
+}
+.stop span {
+  display: block;
+  width: 36%;
+  height: 36%;
+  margin: auto;
+  background: #fff;
+  border-radius: 1px;
+}
+.dots i {
+  display: inline-block;
+  width: 6px;
+  height: 6px;
+  margin: 0 2px;
+  border-radius: 50%;
+  background: #8a90a6;
+  animation: dot 1.2s infinite ease-in-out;
+}
+.dots i:nth-child(2) { animation-delay: 0.2s; }
+.dots i:nth-child(3) { animation-delay: 0.4s; }
+@keyframes dot {
+  0%, 80%, 100% { opacity: 0.25; }
+  40% { opacity: 1; }
+}
+
+.bubble .link {
+  display: block;
+  margin-top: 6px;
+  padding: 0;
+  border: none;
+  background: none;
+  color: #2a62c9;
+  font: inherit;
+  text-decoration: underline;
+  cursor: pointer;
+}
+
+.bubble .muted {
+  color: #6b7080;
+  font-size: 0.92em;
+}
+

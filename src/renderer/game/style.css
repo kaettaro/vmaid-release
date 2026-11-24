@@ -1,0 +1,73 @@
+:root {
+  color-scheme: dark;
+  --bg: #1d1e26;
+  --panel: #262833;
+  --line: #373a49;
+  --text: #e8e9f0;
+  --sub: #9a9db0;
+  --accent: #e0679a;
+  --o: #6fc7ff;
+  --x: #ff9a6f;
+}
+* { box-sizing: border-box; }
+html, body, #root { margin: 0; height: 100%; overflow: hidden; background: var(--bg); color: var(--text); font: 13px/1.4 system-ui, 'Hiragino Sans', 'Yu Gothic UI', sans-serif; user-select: none; }
+.game { display: flex; flex-direction: column; gap: 8px; height: 100%; padding: 10px 14px 14px; }
+.muted { color: var(--sub); }
+header { display: flex; align-items: center; justify-content: space-between; }
+button { font: inherit; color: var(--text); background: var(--panel); border: 1px solid var(--line); border-radius: 6px; padding: 5px 12px; cursor: pointer; }
+button:hover:not(:disabled) { border-color: var(--accent); }
+button:disabled { cursor: default; }
+button.primary { background: var(--accent); border-color: var(--accent); color: #fff; }
+.close { padding: 2px 8px; }
+.status { padding: 8px 10px; text-align: center; font-size: 15px; background: var(--panel); border: 1px solid var(--line); border-radius: 8px; }
+.status.win { border-color: var(--o); color: var(--o); }
+.status.lose { border-color: var(--x); color: var(--x); }
+.note { text-align: center; color: var(--accent); font-weight: 600; }
+.score { text-align: center; color: var(--sub); }
+
+/* 盤面(列の数は --cols)。縦横比は、インラインの aspect-ratio */
+.board-wrap { position: relative; width: 100%; }
+.board-wrap.coords { padding: 0 0 16px 16px; }
+.board { display: grid; grid-template-columns: repeat(var(--cols), 1fr); grid-template-rows: repeat(var(--rows), 1fr); gap: 4px; width: 100%; }
+.cell { display: flex; align-items: center; justify-content: center; font-size: 34px; line-height: 1; padding: 0; border-radius: 8px; background: var(--panel); min-width: 0; min-height: 0; overflow: hidden; }
+.cell:disabled { opacity: 1; }
+.cell.user { color: var(--o); }
+.cell.char { color: var(--x); }
+.cell.win { background: #3a3f55; border-color: var(--accent); box-shadow: inset 0 0 0 2px var(--accent); }
+.cell.last { box-shadow: inset 0 0 0 2px #f4d35e; }
+.cell.sel { box-shadow: inset 0 0 0 3px var(--accent); }
+.cell.pick:hover { border-color: var(--accent); }
+.num { font-size: 14px; color: var(--sub); opacity: 0.5; }
+
+/* ○×(升目): 大きな文字 */
+.board.grid { gap: 6px; }
+.board.grid .cell { font-size: 54px; border-radius: 10px; }
+
+/* コネクト 4(縦に落とす): 青い板に、丸い穴 */
+.board.drop { gap: 4px; padding: 6px; background: #2a4a8a; border-radius: 10px; }
+.board.drop .cell { border-radius: 50%; background: #11172b; border: none; font-size: 30px; }
+.board.drop .cell:disabled { cursor: default; }
+.drop-row { display: grid; gap: 4px; padding: 0 6px; }
+.drop { padding: 0; font-size: 12px; background: transparent; border: none; color: var(--sub); }
+.drop:hover:not(:disabled) { color: var(--accent); }
+
+/* リバーシ・チェス(市松) */
+.board.checker { gap: 0; border-radius: 6px; overflow: hidden; border: 2px solid var(--line); }
+.board.checker .cell { border-radius: 0; border: none; font-size: 30px; }
+.board.checker .cell.light { background: #e8d9b5; }
+.board.checker .cell.dark { background: #b58863; }
+/* 打てる所・動ける先: 小さな点 */
+.cell.tgt { position: relative; }
+.cell.tgt::after { content: ''; position: absolute; width: 28%; height: 28%; border-radius: 50%; background: rgba(40, 40, 60, 0.45); }
+.cell.tgt:hover { box-shadow: inset 0 0 0 3px var(--accent); }
+.board.checker .cell.user { color: #1f6fb2; text-shadow: 0 0 2px #fff; }
+.board.checker .cell.char { color: #c4501f; text-shadow: 0 0 2px #fff; }
+.board.checker .cell.win { box-shadow: inset 0 0 0 3px #e0392b; background: #e8b4a8; }
+
+/* 盤の縁の座標(a〜h・1〜8) */
+.ranks { position: absolute; top: 0; left: 0; bottom: 16px; width: 14px; display: flex; flex-direction: column; justify-content: space-around; font-size: 10px; color: var(--sub); text-align: center; }
+.files { position: absolute; left: 16px; right: 0; bottom: 0; height: 14px; display: grid; font-size: 10px; color: var(--sub); text-align: center; }
+
+.promo { display: flex; flex-wrap: wrap; gap: 6px; justify-content: center; }
+.hint { margin: 0; color: var(--sub); font-size: 11px; }
+.actions { display: flex; gap: 8px; margin-top: auto; }

@@ -1,0 +1,59 @@
+# 状態と感情 Mod(公式)。自由な名前の状態(開始・終了・時間で自動終了)と、感情値(時間で減る)、AI の返答の感情タグ([emotion:名前])への反応が、1 つになっている。素材は含まない。
+# 基本の反応(感情タグで、表情と感情値が変わる)を消したいときは、Mod タブで、ルールを個別に OFF にする。
+id: emotion-state
+name: 状態と感情
+version: "0.3.0"
+feature: emotion-state
+description: "自由な名前の状態(開始・終了・時間で自動終了)と、感情値(時間で減る)を持ち、ルールの条件・アクションで使えます。AI の返答の感情タグ([emotion:名前])に反応します(基本の反応: joy / sad / angry / shy / surprised で、表情が変わり、感情値がたまる。感情値が高いときは、クリックにも反応する)。"
+slots:
+  - { id: expr-sec, group: 表情, label: 感情の表情の長さ, kind: number, default: "4", min: 0.5, max: 60, unit: 秒, hint: 喜び・悲しみ・怒り・照れで、表情を出している時間 }
+  - { id: gain, group: 感情値, label: 感情値の増え方, kind: number, default: "15", min: 0, max: 100, hint: 感情タグ 1 回で、たまる量 }
+  - { id: click-min, group: クリックの反応, label: ごきげんに応える、joy の感情値, kind: number, default: "40", min: 0, max: 100 }
+  - { id: click-cooldown, group: クリックの反応, label: クリックの反応の最小の間隔, kind: number, default: "20", min: 0, max: 3600, unit: 秒 }
+  - id: click-lines
+    group: クリックの反応
+    label: ごきげんなときのセリフ
+    kind: lines
+    default: |
+      ごきげんだよ!
+      うれしい気分が続いてるの
+      いまなら、なんでもできそう
+rules:
+  - id: joy
+    description: うれしいとき、笑顔になり、joy の感情値がたまる
+    when: { trigger: emotionTag, emotion: joy }
+    do:
+      - { action: setExpression, name: happy, value: 1, durationSec: "{{slot:expr-sec}}" }
+      - { action: changeEmotion, name: joy, delta: "{{slot:gain}}" }
+  - id: sad
+    description: かなしいとき、悲しい顔になる
+    when: { trigger: emotionTag, emotion: sad }
+    do:
+      - { action: setExpression, name: sad, value: 1, durationSec: "{{slot:expr-sec}}" }
+      - { action: changeEmotion, name: sad, delta: "{{slot:gain}}" }
+  - id: angry
+    description: おこっているとき、怒った顔になる
+    when: { trigger: emotionTag, emotion: angry }
+    do:
+      - { action: setExpression, name: angry, value: 1, durationSec: "{{slot:expr-sec}}" }
+      - { action: changeEmotion, name: angry, delta: "{{slot:gain}}" }
+  - id: shy
+    description: 照れているとき、くつろいだ顔になる
+    when: { trigger: emotionTag, emotion: shy }
+    do:
+      - { action: setExpression, name: relaxed, value: 1, durationSec: "{{slot:expr-sec}}" }
+      - { action: changeEmotion, name: shy, delta: "{{slot:gain}}" }
+  - id: surprised
+    description: おどろいたとき、びっくりした顔になる
+    when: { trigger: emotionTag, emotion: surprised }
+    do:
+      - { action: setExpression, name: surprised, value: 1, durationSec: 3 }
+  - id: joyful-click
+    description: joy の感情値が高いとき、クリックに、ごきげんで応える
+    when: { trigger: click }
+    if:
+      - { condition: emotion, name: joy, min: "{{slot:click-min}}" }
+      - { condition: cooldown, sec: "{{slot:click-cooldown}}" }
+    do:
+      - { action: setExpression, name: happy, value: 1, durationSec: 3 }
+      - { action: say, text: ["{{slot:click-lines}}"] }

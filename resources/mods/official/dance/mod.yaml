@@ -1,0 +1,36 @@
+# ダンス Mod(公式・データ Mod)。「ワルツを踊って」「踊って ワルツ」のように入力すると、楽曲○○のダンスを始めます。「ストップ」「中止」などで、モーションも曲も止まります。
+# 楽曲の表(設定 → Mod → ダンス)に、楽曲の名前・踊るモーション・BGM(曲ファイル)を登録します。素材(モーション・曲)は含みません。
+# 表に無い名前は、登録済みのモーション(設定 →「モーション」)の名前として、BGM なしで再生します。
+# 踊りを始める言葉・止める言葉は、設定で変えられます(カンマ・読点で区切って、複数)。
+id: dance
+name: ダンス
+version: "0.3.0"
+description: 「ワルツを踊って」「踊って ワルツ」のように、楽曲の名前を添えて入力すると、その楽曲のモーションを再生し、BGM を一緒に流します。「ストップ」「中止」などと入力すると、モーションも BGM も止まります(どちらも AIには送りません)。楽曲の表と、始める言葉・止める言葉は、この Mod の設定で作ります。
+slots:
+  - id: songs
+    label: 楽曲の表
+    kind: dances
+    hint: 楽曲の名前・踊るモーション・BGM を、1 行ずつ登録します。BGM は、曲ファイルを自分で選びます(同梱しません)。
+  - id: start-words
+    label: 踊りを始める言葉
+    kind: text
+    default: 踊って,ダンスして,おどって
+    hint: カンマ・読点で区切って、複数。「ワルツを踊って」のように、楽曲の名前と一緒に入力します。
+  - id: stop-words
+    label: 踊りを止める言葉
+    kind: text
+    default: ストップ,中止,止まって,ダンスを止めて,踊りを止めて,踊りをやめて,ダンスをやめて,踊るのをやめて,曲を止めて,音楽を止めて
+    hint: カンマ・読点で区切って、複数。入力に含まれていれば、モーションも BGM も止まります。ふだんの会話で使う言葉は、入れないでください(入力は AI に送られず、止める操作になります)。
+rules:
+  - id: stop
+    description: 「ストップ」「中止」などと入力すると、モーションも BGM も止める
+    when: { trigger: userMessage, keywords: ["{{slot:stop-words}}"] }
+    do:
+      - { action: stopMotion, bgm: true }
+      - { action: say, text: ["はーい、止めたよ。", "ここまでだね。"] }
+  - id: named
+    description: 「ワルツを踊って」「踊って ワルツ」と入力すると、楽曲のモーション(と BGM)を再生する
+    when: { trigger: userMessage, keywords: ["{{slot:start-words}}"] }
+    do:
+      - { action: say, text: ["いくよー!", "見ててね!"] }
+      - { action: playDance, songs: "{{slot:songs}}", name: "{{message}}", fallback: "{{subject}}" }

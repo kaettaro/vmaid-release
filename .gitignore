@@ -1,0 +1,24 @@
+node_modules/
+dist/
+out/
+release/
+.DS_Store
+*.log
+# 手持ちの素材(ライセンス不明のため入れない)
+/assets/
+# ダウンロードしたモデル
+/models/
+*.gguf
+THIRD_PARTY_LICENSES.md
+
+# 録画・スクリーンショットなど(手元の確認用。リポジトリに入れない)
+*.mp4
+Recording *.mp4
+release.zip
+*.vmaidpack
+SampleMotion*.zip
+*.unitypackage
+
+# ベータ配布の出力(友人限定の素材を含む。リポジトリに入れない)
+/beta/
+/AliciaSolid.vrm

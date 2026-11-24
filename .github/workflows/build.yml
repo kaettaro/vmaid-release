@@ -1,0 +1,54 @@
+# テストと配布ビルド。Mac は Mac で、Windows は Windows でビルドする(ネイティブバイナリがOSごとに違うため)。
+# 外部サービスへのアップロード・自動公開はしない(成果物は Actions の artifact として保存するだけ)。
+name: build
+
+on:
+  push:
+    branches: [main]
+    tags: ['v*']
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version-file: .nvmrc
+          cache: npm
+      - run: npm ci
+      - run: npm run typecheck
+      - run: npm run lint
+      - run: npm test
+
+  package:
+    needs: test
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - os: macos-latest # Apple Silicon(arm64)
+            script: build:mac
+            artifact: release/*.dmg
+          - os: windows-latest
+            script: build:win
+            artifact: release/*.exe
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version-file: .nvmrc
+          cache: npm
+      - run: npm ci
+      - run: npm run ${{ matrix.script }}
+      - uses: actions/upload-artifact@v4
+        with:
+          name: vmaid-${{ matrix.os }}
+          path: ${{ matrix.artifact }}
+          if-no-files-found: error

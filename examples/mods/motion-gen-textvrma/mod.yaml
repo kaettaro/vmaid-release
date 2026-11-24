@@ -1,0 +1,72 @@
+# モーション生成 Mod(text-to-vrma 連携)。スクリプト Mod(Tier 2)の実例で、公式のサンプルです。
+# 「モーション生成: 手を振る」のように入力すると、あなたが別に起動した text-to-vrma(ローカルの API)に、動きの説明を送り、
+# 返ってきた VRMA を、あなたのモーション一覧に足して、キャラで再生します。
+#
+# - アプリには同梱していません(スクリプトを含む Mod は、「開発者向け」を ON にしたときだけ使えます)。導入は docs/guides/motion-gen-setup.md
+# - text-to-vrma の導入は、あなたが行います。VMaid は、ダウンロードはしません。起動は、あなたが「選ぶ…」で選んだ実行ファイル(.bat など)を、
+#   「起動」ボタン、または「自動で起動する」が ON のときの最初の生成で、起動します(VMaid が起動したものは、VMaid の終了時に止めます)
+# - 通信先は、下の permissions.network に書いたオリジンだけです(既定: 自分のPCの 127.0.0.1:8787)。ポートを変えるときは、ここと、設定の「接続先」を、同じにしてください
+id: motion-gen-textvrma
+name: モーション生成(text-to-vrma 連携)
+version: "0.1.0"
+distribution: private
+description: 入力した動きの説明から、ローカルの text-to-vrma で VRMA を作り、モーション一覧に足して再生します(別途、text-to-vrma の導入が必要です)。
+script:
+  apiVersion: 1
+  entry: main.js
+  settings:
+    - { name: exe, label: 起動する実行ファイル, kind: file, hint: "text-to-vrma(と ARDY)を起動する .bat / .exe。例は docs/guides/motion-gen-setup.md" }
+    - { name: autoStart, label: 生成するとき、起動していなければ自動で起動する, kind: boolean, default: false }
+    - { name: endpoint, label: 接続先, kind: string, default: "http://127.0.0.1:8787", hint: "「通信先」(権限)と同じオリジンにしてください" }
+    - { name: token, label: トークン(必要な場合), kind: secret, hint: "text-to-vrma のデスクトップ版の「ローカルHTTP API」では必要です" }
+    - { name: timeoutSec, label: 生成の待ち時間の上限(秒), kind: number, default: 300 }
+  launcher: { label: text-to-vrma, pathSetting: exe, autoSetting: autoStart, healthUrl: "http://127.0.0.1:8787/health", startupSec: 180 }
+  permissions:
+    network: ["http://127.0.0.1:8787"]
+    motion: [add, play]
+    say: true
+    storage: true
+    emit: true
+  contributes:
+    triggers:
+      - { type: generating, label: モーションの生成を始めたとき }
+      - { type: cached, label: 作らずに、前の動きを使ったとき }
+      - { type: generated, label: モーションの生成が終わったとき }
+      - { type: failed, label: モーションの生成に失敗したとき }
+    actions:
+      - type: generateMotion
+        label: モーションを生成して再生
+        description: 動きの説明から、text-to-vrma で VRMA を作り、モーション一覧に足して、再生する(同じ説明・長さは、作り直さず、前のものを再生する)。生成には、数十秒〜数分かかります
+        params:
+          - { name: prompt, label: 動きの説明, kind: string, required: true, template: true, hint: "最大500文字。「{{rest}}」で、入力した言葉を使えます" }
+          - { name: durationSec, label: 長さ(秒), kind: number, min: 1, max: 30, default: 4 }
+          - { name: quiet, label: 黙って作る(「考え中…」・失敗を言わない。自動の反応用), kind: boolean, default: false }
+      - type: learnPose
+        label: ポーズを作って覚える
+        description: "「ポーズを覚えて「万歳」両手を上げて喜ぶ」のような入力から、動きを作って、「万歳」という名前(合言葉)で覚える。覚えたポーズは、「万歳をとって」で、すぐ再生できる"
+        params:
+          - { name: message, label: 入力した文, kind: string, required: true, template: true, hint: "ふつうは、「{{message}}」のまま" }
+          - { name: durationSec, label: 長さ(秒), kind: number, min: 1, max: 30, default: 4 }
+      - type: takePose
+        label: ポーズをとる(覚えない)
+        description: "入力に覚えたポーズの名前があれば、それを再生する。「ポーズをとって: 両手を上げる」のように説明があれば、動きを作って再生する(こちらは、覚えない)"
+        params:
+          - { name: message, label: 入力した文, kind: string, required: true, template: true, hint: "ふつうは、「{{message}}」のまま" }
+          - { name: rest, label: ポーズをとって、のあとに続く文, kind: string, template: true, hint: "ふつうは、「{{rest}}」のまま" }
+          - { name: durationSec, label: 長さ(秒), kind: number, min: 1, max: 30, default: 4 }
+rules:
+  - id: by-word
+    description: "「モーション生成: 手を振る」のような入力から、動きを作って再生する(AIには送りません。判定は、記号・空白を無視するので、「モーション生成」を含む入力に反応します)"
+    when: { trigger: userMessage, keywords: ["モーション生成:"], passToLlm: false }
+    do:
+      - { action: generateMotion, prompt: "{{rest}}" }
+  - id: pose-learn
+    description: "「ポーズを覚えて「万歳」両手を上げて喜ぶ」と入力すると、その動きを作って、「万歳」の名前で覚える(覚えさせる入力は、AIには送りません)"
+    when: { trigger: userMessage, keywords: ["ポーズを覚えて"], passToLlm: false }
+    do:
+      - { action: learnPose, message: "{{message}}", durationSec: 4 }
+  - id: pose-take
+    description: "「万歳をとって」で、覚えたポーズをとる。「ポーズをとって: 両手を上げる」なら、その動きを作って再生する(こちらは覚えません)。AIにも、ふつうに送ります"
+    when: { trigger: userMessage, keywords: ["ポーズをとって", "をとって"], passToLlm: true }
+    do:
+      - { action: takePose, message: "{{message}}", rest: "{{rest}}", durationSec: 4 }

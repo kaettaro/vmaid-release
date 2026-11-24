@@ -1,0 +1,39 @@
+# 話しかけ(AI)Mod(公式)。キャラのほうから、AI(設定している LLM)に頼んで、自然な話しかけをする。素材・外部通信は、含まない(通信するのは、あなたが設定した LLM の接続先だけ)。
+# 「話しかけ」Mod(feature: talk)が ON のときに使える。話しかけ控え(静かにして・会話中・夜間・最小の間隔・1 日の上限)も、同じ設定が効く。
+# AI の準備ができていない(内蔵モデルを、まだダウンロードしていない・LM Studio などが起動していない)ときは、何も言わない。内蔵モデルのダウンロードは、始めない。
+# 間隔・秒数・AI への指示は、すべて、Mod タブの「この Mod の設定」で変えられる(ルールは、触らなくてよい)。
+id: talk-ai
+name: 話しかけ(AI)
+version: "0.2.0"
+requires: [talk]
+description: キャラのほうから、AI に頼んで、その場に合った話しかけをします(独り言・長く放置したときのひとこと)。返答だけが吹き出しに出て、あなたの吹き出しは出ません。AI を使うので、「話しかけ」Mod も ON にしてください。会話中・夜間・「静かにして」のときは、話しかけません。
+slots:
+  - { id: murmur-min, group: 独り言, label: 独り言の間隔, kind: number, default: "45", min: 1, max: 1440, unit: 分 }
+  - id: murmur-instruction
+    group: 独り言
+    label: AI への指示(独り言)
+    kind: text
+    default: ユーザーに、軽い話題で、何か話しかけて。作業のじゃまにならないよう、短く、ひとことで。
+    hint: キャラの性格・口調は、別に設定してあるので、ここには、「何を話してほしいか」だけを書きます。
+  - { id: idle-sec, group: 放置したとき, label: 放置してから、声をかけるまで, kind: number, default: "1800", min: 60, max: 86400, unit: 秒 }
+  - id: idle-instruction
+    group: 放置したとき
+    label: AI への指示(放置したとき)
+    kind: text
+    default: ユーザーが、しばらく何も操作していません。やさしく、さりげなく、声をかけて。
+  - { id: save, group: 会話, label: 返答を、会話の文脈に残す, kind: boolean, default: "true", hint: オンなら、あとで「さっきの話」と言っても、通じます }
+rules:
+  - id: ai-murmur
+    description: 一定の間隔で、AI に頼んで、話しかける
+    when: { trigger: interval, everyMin: "{{slot:murmur-min}}" }
+    if:
+      - { condition: canTalk }
+    do:
+      - { action: askAi, instruction: "{{slot:murmur-instruction}}", save: "{{slot:save}}" }
+  - id: ai-idle
+    description: 放置されると、AI に頼んで、声をかける
+    when: { trigger: idle, afterSec: "{{slot:idle-sec}}" }
+    if:
+      - { condition: canTalk }
+    do:
+      - { action: askAi, instruction: "{{slot:idle-instruction}}", save: "{{slot:save}}" }

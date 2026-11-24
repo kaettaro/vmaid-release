@@ -1,0 +1,26 @@
+# 会話中に自動でポーズ Mod。キャラが返答するとき、場面に合う体の動きを、AI 自身に選ばせて、裏で作って(モーション生成 Mod)、再生する。
+# 前提: 「モーション生成(text-to-vrma 連携)」Mod が ON で、text-to-vrma が使えること(docs/guides/motion-gen-setup.md)。無いときは、何も起きません(AI の返答は、ふつうに出ます)。
+# 仕組み: この Mod の指示文が、AI に「返答に [pose:動きの説明] を必ず付ける」と頼む(付けるのは無料。動きを作るかどうかは、ルールの確率と間隔で決める)。実験(2026-11-18): Gemma 4 E4B で、「付けてもよい」は 3/8、「必ず付ける + 例」は 8/8 だった。タグは画面に出ない。
+#   ルール(トリガー「AI が動き(ポーズ)を指定したとき」)が受けて、モーション生成 Mod のアクションに、{{pose}} を渡す。同じ説明は、作り直さない(キャッシュ)。
+# 通信: 新しい通信は、ありません(モーション生成 Mod が、自分の PC の text-to-vrma に頼むだけ)。AI の返答の文は、text-to-vrma へは送りません(動きの説明だけ)。
+id: auto-pose
+name: 会話中に自動でポーズ
+version: "0.1.1"
+distribution: private
+description: キャラが返答するとき、場面に合う体の動きを AI に選ばせて、裏で作って再生します(「モーション生成」Mod と、text-to-vrma が必要)。確率と間隔で、頻度を抑えられます。
+slots:
+  - { id: chance, group: 頻度, label: 動きを付ける確率, kind: number, default: "0.5", min: 0, max: 1, step: 0.1, hint: "1 = AI がタグを付けたら、いつも作る。0.5 = 半分だけ" }
+  - { id: cooldown, group: 頻度, label: 最小の間隔, kind: number, default: "30", min: 0, max: 3600, unit: 秒, hint: 動きを作るのは、この秒数あけてから(GPU を使い続けないように) }
+  - { id: length, group: 動き, label: 動きの長さ, kind: number, default: "4", min: 1, max: 30, unit: 秒 }
+prompt:
+  layer: persona
+  text: "返答の最初(感情タグがあれば、そのすぐあと)に、必ず [pose:動きの説明] を1つ付ける。省略しない。動きの説明は、その返答にあう体の動きを、日本語で10〜15文字で書く(例: 両手を上げて喜ぶ / 首をかしげて考える / ぺこりとお辞儀する / 腕を組んで考え込む / 手を振って挨拶する / うなずく / 肩を落とす / 伸びをする)。そのあとに、ふつうに返答を書く。例: [emotion:joy][pose:両手を上げて喜ぶ]やったね、すごいよ! / [pose:首をかしげて考える]うーん、どうだろうね。 タグは、ユーザーには表示されない。"
+rules:
+  - id: react
+    description: AI が返答に付けた動きの指定([pose:…])を、モーション生成 Mod に頼んで、作って再生する(黙って作る。確率と間隔は、スロットで変えられます)
+    when: { trigger: poseTag }
+    if:
+      - { condition: probability, value: "{{slot:chance}}" }
+      - { condition: cooldown, sec: "{{slot:cooldown}}" }
+    do:
+      - { action: motion-gen-textvrma/generateMotion, prompt: "{{pose}}", durationSec: "{{slot:length}}", quiet: true }

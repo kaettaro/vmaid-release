@@ -1,0 +1,72 @@
+# 私用パック「community-vrma」のルール(外部のモーションを使う。**このファイルは、素材を含まない**。モーション本体は、fetch-private-pack.mjs が取得する)。
+# 配布用の「ふれあい基本パック」(touch-basic)と、一緒に使える。モーション名は、このパックの中での名前(登録されるときは community-vrma/名前)。
+# 「待機バリエーション」タグは、pack.yaml の motions(idle-2〜5)に付く(fetch-private-pack.mjs が書く)。
+rules:
+  # --- 待機に変化をつける: しばらく放っておくと、ふだんと違う待機の動きをする ---
+  - id: idle-variety
+    description: しばらく何もしないと、いつもと違う待機の動き(idle_2〜5)をする
+    when: { trigger: idle, afterSec: 150 }
+    if:
+      - { condition: probability, value: 0.7 }
+      - { condition: cooldown, sec: 300 }
+    do:
+      - { action: playMotion, tag: 待機バリエーション, pick: random }
+
+  # --- 親密度が高いとき、なでられて大よろこび ---
+  - id: joy-pose
+    description: 親密度が高いとき、頭をなで続けてもらうと、Vサインしてよろこぶ
+    when: { trigger: stroke, part: head, minSec: 5 }
+    if:
+      - { condition: affection, min: 55 }
+      - { condition: cooldown, sec: 60 }
+    do:
+      - { action: setExpression, name: happy, value: 1, durationSec: 5 }
+      - { action: playMotion, motion: vroid-3 }
+      - { action: say, text: ["やったー!", "いえーい!"] }
+      - { action: changeAffection, delta: 1 }
+
+  - id: joy-spin
+    description: 親密度がとても高いとき、なで終わりに、くるっと回ってよろこぶ
+    when: { trigger: strokeEnd, part: head, minSec: 6 }
+    if:
+      - { condition: affection, min: 75 }
+      - { condition: cooldown, sec: 120 }
+    do:
+      - { action: wait, sec: 1 }
+      - { action: playMotion, motion: vroid-5 }
+      - { action: setExpression, name: happy, value: 1, durationSec: 5 }
+
+  # --- 手を長押し: 見せたがる ---
+  - id: hand-show
+    description: 手を長押しすると、ポーズを見せる
+    when: { trigger: hold, part: hand, minSec: 1.5 }
+    do:
+      - { action: playMotion, motion: vroid-6 }
+      - { action: say, text: ["どう?", "見て見て"] }
+
+  # --- トリガーワード ---
+  - id: word-peace
+    description: 「ピース」「Vサイン」と入力すると、Vサインをする
+    when: { trigger: userMessage, keywords: ["ピース", "ぴーす", "Vサイン", "ブイ"] }
+    do:
+      - { action: playMotion, motion: vroid-3 }
+      - { action: say, text: ["ぴーす!"] }
+
+  - id: word-pose
+    description: 「ポーズ」「全身」と入力すると、ポーズをとる
+    when: { trigger: userMessage, keywords: ["ポーズ", "全身見せて", "ぽーず"] }
+    do:
+      - { action: playMotion, motion: vroid-6 }
+
+  - id: word-exercise
+    description: 「運動」と入力すると、屈伸運動をする
+    when: { trigger: userMessage, keywords: ["運動", "うんどう", "ストレッチ"] }
+    do:
+      - { action: say, text: ["いっちに、さんし!"] }
+      - { action: playMotion, motion: vroid-7 }
+
+  - id: word-spin
+    description: 「回って」と入力すると、くるっと回る
+    when: { trigger: userMessage, keywords: ["回って", "まわって", "くるっと"] }
+    do:
+      - { action: playMotion, motion: vroid-5 }

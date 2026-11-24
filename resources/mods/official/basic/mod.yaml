@@ -1,0 +1,49 @@
+# 基本 Mod(公式)。はじめから入っている、基本のあいさつ・ふれあい・放置時の反応。内蔵のモーションだけを使い、素材は含まない。
+# セリフ・秒数・確率・合言葉は、Mod タブの「この Mod の設定」で変えられます(ルールは、触らなくてよい)。消したいルールは、ルールごとに OFF にできます。
+id: basic
+name: 基本
+version: "1.1.0"
+description: 起動したときのあいさつ、クリックへの反応、放置されたときのダンス、「手を振って」への反応。初めて起動したときから ON です。セリフ・放置の秒数・確率・合言葉は、この Mod の設定で変えられます。
+slots:
+  - id: hello-lines
+    group: あいさつ
+    label: 起動したときのセリフ
+    kind: lines
+    default: |
+      こんにちは!
+      おはよう!
+      今日もよろしくね
+    hint: 1 行に 1 つ。複数あれば、ランダムに 1 つ選ばれます。
+  - { id: idle-sec, group: 放置したとき, label: 放置してから、踊るまで, kind: number, default: "300", min: 10, max: 86400, unit: 秒 }
+  - { id: idle-prob, group: 放置したとき, label: 踊る確率, kind: number, default: "0.8", min: 0, max: 1, step: 0.05, hint: "0〜1。1 なら必ず踊ります" }
+  - { id: idle-cooldown, group: 放置したとき, label: 次に踊るまでの最小の間隔, kind: number, default: "600", min: 0, max: 86400, unit: 秒 }
+  - { id: wave-words, group: 合言葉, label: 手を振る合言葉, kind: text, default: "手を振って,手ふって,バイバイ,ばいばい", hint: カンマ・読点・改行で区切ると、複数の言葉になります }
+rules:
+  - id: startup-greeting
+    description: 起動したとき、あいさつする
+    when: { trigger: startup }
+    do:
+      - { action: playMotion, motion: wave }
+      - { action: say, text: ["{{slot:hello-lines}}"] }
+
+  - id: click-react
+    description: キャラをクリックしたとき、ふれあいのリアクションをする(ダブルクリックは会話)
+    when: { trigger: click }
+    do:
+      - { action: playMotion, motion: nod }
+      - { action: setExpression, name: happy, value: 1, durationSec: 2 }
+
+  - id: idle-dance
+    description: しばらく放置されると、踊る(既定は 80% の確率で、10 分に 1 回まで)
+    when: { trigger: idle, afterSec: "{{slot:idle-sec}}" }
+    if:
+      - { condition: probability, value: "{{slot:idle-prob}}" }
+      - { condition: cooldown, sec: "{{slot:idle-cooldown}}" }
+    do:
+      - { action: playMotion, motion: dance1 }
+
+  - id: word-wave
+    description: 「手を振って」「バイバイ」などと入力すると、手を振る
+    when: { trigger: userMessage, keywords: ["{{slot:wave-words}}"] }
+    do:
+      - { action: playMotion, motion: wave }

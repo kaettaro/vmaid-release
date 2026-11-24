@@ -1,0 +1,44 @@
+{
+  "version": 1,
+  "models": [
+    {
+      "id": "qwen3-4b-instruct-2507-q4km",
+      "name": "Qwen3 4B Instruct (軽量・8GBメモリ向け)",
+      "family": "qwen3",
+      "license": "Apache-2.0",
+      "url": "https://huggingface.co/unsloth/Qwen3-4B-Instruct-2507-GGUF/resolve/main/Qwen3-4B-Instruct-2507-Q4_K_M.gguf",
+      "sha256": "3605803b982cb64aead44f6c1b2ae36e3acdb41d8e46c8a94c6533bc4c67e597",
+      "sizeBytes": 2497281120,
+      "quant": "Q4_K_M",
+      "contextLength": 262144,
+      "minRamGB": 6,
+      "notes": "思考過程を出さない非思考型。元モデルは Qwen 公式(Apache-2.0)。GGUF は unsloth による変換(サードパーティ)。ファイルはSHA-256で固定して検証する。minRamGB は目安(未実測)。"
+    },
+    {
+      "id": "gemma-4-e4b-it-q4km",
+      "name": "Gemma 4 E4B (高品質・16GB以上のメモリ向け)",
+      "family": "gemma4",
+      "license": "Apache-2.0",
+      "url": "https://huggingface.co/unsloth/gemma-4-E4B-it-GGUF/resolve/main/gemma-4-E4B-it-Q4_K_M.gguf",
+      "sha256": "85a896a047553e842f25297ee5b031d64ff30147d9c4af17b1e4b394cd1fab87",
+      "sizeBytes": 4977171584,
+      "quant": "Q4_K_M",
+      "contextLength": 131072,
+      "minRamGB": 12,
+      "notes": "元モデルは Google 公式(Apache-2.0)。GGUF は unsloth による変換(サードパーティ)。日本語品質は M4 の比較で確認予定(未確認)。minRamGB は目安(未実測)。"
+    },
+    {
+      "id": "ministral-3-3b-instruct-2512-q4km",
+      "name": "Ministral 3 3B (軽量・代替)",
+      "family": "ministral3",
+      "license": "Apache-2.0",
+      "url": "https://huggingface.co/mistralai/Ministral-3-3B-Instruct-2512-GGUF/resolve/main/Ministral-3-3B-Instruct-2512-Q4_K_M.gguf",
+      "sha256": "9ed150d4367e68df0ac8e1540f6ddc65b42d0ee26378329d1ecbca60f93fc5f8",
+      "sizeBytes": 2147023008,
+      "quant": "Q4_K_M",
+      "contextLength": 262144,
+      "minRamGB": 5,
+      "notes": "Mistral 公式の GGUF(Apache-2.0)。日本語を公式にサポート(モデルカードの言語一覧に ja)。日本語の自然さは M4 の比較で確認予定(未確認)。minRamGB は目安(未実測)。"
+    }
+  ]
+}

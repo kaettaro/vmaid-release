@@ -1,0 +1,49 @@
+/* --- 吹き出し拡張: 形(data-shape)。ふつう(normal)は、上のまま --- */
+.bubble[data-shape='round'] {
+  border-radius: calc(26px * var(--ui-scale, 1));
+  padding: 10px 16px;
+}
+.bubble[data-shape='square'] {
+  border-radius: 3px;
+}
+.bubble[data-shape='cloud'],
+.bubble[data-shape='think'] {
+  border-radius: 48% 52% 50% 50% / 55% 45% 55% 45%;
+  padding: 14px 20px;
+}
+/* 考え中: しっぽは、小さな丸が 2 つ */
+.bubble-character[data-shape='think']::after {
+  top: calc(100% + 2px);
+  left: calc(50% - 7px);
+  width: 14px;
+  height: 14px;
+  border: none;
+  border-radius: 50%;
+  background: var(--b-bg, rgba(255, 255, 255, 0.96));
+  box-shadow: -10px 14px 0 -4px var(--b-bg, rgba(255, 255, 255, 0.96));
+}
+/* ギザギザ(叫び): 背景は、ギザギザの多角形の下敷き(::before)にして、文字・しっぽは切らない */
+.bubble[data-shape='comic'] {
+  isolation: isolate;
+  background: transparent;
+  padding: 20px 26px;
+}
+.bubble[data-shape='comic']::before {
+  content: '';
+  position: absolute;
+  inset: -10px -12px;
+  z-index: -1;
+  background: var(--b-bg, rgba(255, 255, 255, 0.96));
+  clip-path: var(--b-clip, none);
+}
+/* ふるえる(はずかしい)。少しの間だけ */
+.bubble[data-shake] .bubble-scroll {
+  animation: bubble-shake 0.09s linear 14;
+}
+@keyframes bubble-shake {
+  0% { transform: translate(0, 0); }
+  25% { transform: translate(1px, -1px); }
+  50% { transform: translate(-1px, 1px); }
+  75% { transform: translate(1px, 1px); }
+  100% { transform: translate(0, 0); }
+}

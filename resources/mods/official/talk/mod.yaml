@@ -1,0 +1,113 @@
+# 話しかけ Mod(公式)。キャラのほうから、ときどき話しかける。素材・外部通信は、含まない。
+# どのルールにも、条件「話しかけてよいとき」(canTalk)が付いている。会話中・ゲーム中・非表示・夜間・「静かにして」のとき、
+# 前の話しかけから間もないとき、1 日の上限に達したときは、話しかけない(間隔・上限・夜間は、この Mod の設定で変えられる。既定: 10 分あけ・1 日 20 回・夜 23:00〜7:00 は話しかけない)。
+# 時間帯・間隔・セリフは、すべて、Mod タブの「この Mod の設定」で変えられる(ルールは、触らなくてよい)。
+id: talk
+name: 話しかけ
+version: "0.2.0"
+feature: talk
+description: キャラのほうから、ときどき話しかけます(起動時のあいさつ・朝昼晩のあいさつ・放置したときのひとこと・定期の独り言)。会話中・ゲーム中・夜間・「静かにして」のときは、話しかけません。時間帯・間隔・セリフ・1 日の上限・夜間の時間帯は、この Mod の設定で変えられます。外部への通信は、しません。
+slots:
+  - id: hello-lines
+    group: あいさつ
+    label: 起動したときのセリフ
+    kind: lines
+    default: |
+      おはよう。今日もよろしくね
+      あ、来てくれたんだ
+      今日は何をしようか?
+    hint: 1 行に 1 つ。複数あれば、ランダムに 1 つ選ばれます。
+  - { id: morning-from, group: あいさつ, label: 朝のあいさつ 始まり, kind: time, default: "07:00" }
+  - { id: morning-to, group: あいさつ, label: 朝のあいさつ 終わり, kind: time, default: "10:00", hint: この時間帯に、1 日 1 回、あいさつします }
+  - id: morning-lines
+    group: あいさつ
+    label: 朝のセリフ
+    kind: lines
+    default: |
+      おはよう!よく眠れた?
+      朝だよ。今日も一日がんばろう
+      おはよう。ちゃんと朝ごはん食べた?
+  - { id: noon-from, group: あいさつ, label: お昼のあいさつ 始まり, kind: time, default: "12:00" }
+  - { id: noon-to, group: あいさつ, label: お昼のあいさつ 終わり, kind: time, default: "13:30" }
+  - id: noon-lines
+    group: あいさつ
+    label: お昼のセリフ
+    kind: lines
+    default: |
+      お昼だよ。ごはん食べた?
+      そろそろお昼休みにしない?
+      おなかすいたね
+  - { id: evening-from, group: あいさつ, label: 夕方のあいさつ 始まり, kind: time, default: "18:00" }
+  - { id: evening-to, group: あいさつ, label: 夕方のあいさつ 終わり, kind: time, default: "21:00" }
+  - id: evening-lines
+    group: あいさつ
+    label: 夕方のセリフ
+    kind: lines
+    default: |
+      お疲れさま。今日はどうだった?
+      もう夕方だね。一日、早いなあ
+      今日も一日、おつかれさま
+  - { id: idle-sec, group: 放置したとき, label: 放置してから、声をかけるまで, kind: number, default: "1200", min: 60, max: 86400, unit: 秒, hint: クリック・ドラッグ・チャット入力がない時間 }
+  - id: idle-lines
+    group: 放置したとき
+    label: 放置したときのセリフ
+    kind: lines
+    default: |
+      何してるの?
+      ねえ、ちょっと休憩しない?
+      ……ひま?
+      まだ作業してるの?
+  - { id: murmur-min, group: 独り言, label: 独り言の間隔, kind: number, default: "30", min: 1, max: 1440, unit: 分, hint: "前の話しかけから、「最小の間隔」(下の設定)があいていないときは、あとで話します" }
+  - id: murmur-lines
+    group: 独り言
+    label: 独り言のセリフ
+    kind: lines
+    default: |
+      そういえば、お水は飲んだ?
+      ちょっと背伸びしたら?
+      今日は、いい天気かな
+      ふふ、なんでもないよ
+      ねえねえ、何か話そうよ
+rules:
+  - id: hello
+    description: 起動したとき、あいさつする
+    when: { trigger: startup }
+    if:
+      - { condition: canTalk }
+    do:
+      - { action: say, text: ["{{slot:hello-lines}}"] }
+  - id: morning
+    description: 朝に、あいさつする(1 日 1 回)
+    when: { trigger: timeOfDay, at: "{{slot:morning-from}}", until: "{{slot:morning-to}}" }
+    if:
+      - { condition: canTalk }
+    do:
+      - { action: say, text: ["{{slot:morning-lines}}"] }
+  - id: noon
+    description: お昼に、声をかける(1 日 1 回)
+    when: { trigger: timeOfDay, at: "{{slot:noon-from}}", until: "{{slot:noon-to}}" }
+    if:
+      - { condition: canTalk }
+    do:
+      - { action: say, text: ["{{slot:noon-lines}}"] }
+  - id: evening
+    description: 夕方に、声をかける(1 日 1 回)
+    when: { trigger: timeOfDay, at: "{{slot:evening-from}}", until: "{{slot:evening-to}}" }
+    if:
+      - { condition: canTalk }
+    do:
+      - { action: say, text: ["{{slot:evening-lines}}"] }
+  - id: idle-talk
+    description: 放置されると、声をかける
+    when: { trigger: idle, afterSec: "{{slot:idle-sec}}" }
+    if:
+      - { condition: canTalk }
+    do:
+      - { action: say, text: ["{{slot:idle-lines}}"] }
+  - id: murmur
+    description: 一定の間隔で、独り言を言う
+    when: { trigger: interval, everyMin: "{{slot:murmur-min}}" }
+    if:
+      - { condition: canTalk }
+    do:
+      - { action: say, text: ["{{slot:murmur-lines}}"] }
